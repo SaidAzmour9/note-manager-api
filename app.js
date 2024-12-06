@@ -10,7 +10,7 @@ const userRoutes = require('./src/routes/userRoutes');
 const notesRoutes = require('./src/routes/notesRoutes');
 const errorHandling = require('./src/middlewares/errorHandler');
 
-app.use(express.json());
+app.use(express.json()); 
 
 //users routes
 app.use('/users', userRoutes);

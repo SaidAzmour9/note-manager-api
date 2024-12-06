@@ -1,37 +1,28 @@
 const express = require('express');
 const router = express.Router();
+const {addTags,getTags,getTagById,updateTag,deleteTag, addCategory,getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote } = require('../controllers/notesControllers')
+const {validation,errorValidatorHandler} = require('../utils/Validators')
 
 
-// Notes Handlers
-const getAllNotes = (req, res) => {
-    res.status(200).json({ message: 'Fetching all notes' });
-};
-const getNoteById = (req, res) => {
-    const { id } = req.params;
-    res.status(200).json({ message: `Fetching note with id: ${id}` });
-};
-const createNote = (req, res) => {
-    const noteData = req.body;
-    res.status(201).json({ message: 'Note created', data: noteData });
-};
-const updateNote = (req, res) => {
-    const { id } = req.params;
-    const updatedData = req.body;
-    res.status(200).json({ message: `Note with id: ${id} updated`, data: updatedData });
-};
-const deleteNote = (req, res) => {
-    const { id } = req.params;
-    res.status(200).json({ message: `Note with id: ${id} deleted` });
-};
+// notes route
 
+// tags routes
+router.post('/tags',validation.tagValidation,errorValidatorHandler,addTags)
+router.get('/tags',getTags)
+router.get('/tags/:id',getTagById)
+router.put('/tags/:id',validation.tagValidation,errorValidatorHandler, updateTag)
+router.delete('/tags/:id',deleteTag)
 
+// Categories routes
+router.get('/categories', getCategorys)
+router.post('/categories',validation.categoryValidation,errorValidatorHandler,addCategory)
+router.put('/categories/:id',validation.categoryValidation,errorValidatorHandler, updateCategory)
+router.delete('/categories/:id',deletecategory)
+router.get('/categories/:id',getCategoryById)
 
-// Note routes
-router.get('/', getAllNotes);
-router.get('/notes/:id', getNoteById);
-router.post('/notes', createNote);
-router.put('/notes/:id', updateNote);
-router.delete('/notes/:id', deleteNote);
+//  Notes routes
+router.get('/notes',getNotes)
+router.post('/', addNote);
 
 module.exports = router;
 

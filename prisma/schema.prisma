@@ -12,3 +12,54 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  firstname      String
+  lastname       String
+  email     String   @unique
+  password       String
+  cretedAt DateTime @default(now())
+  updated_at DateTime @updatedAt
+  deletedAt DateTime?
+  notes     Note[]
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  content   String
+  categoryId Int
+  category Category @relation(fields: [categoryId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  tagNote TagNote[]
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  tagNote TagNote[]
+}
+
+model Category{
+  id        Int      @id @default(autoincrement())
+  name      String
+  notes Note[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+}
+
+model TagNote {
+  id Int @id @default(autoincrement())
+  tagId Int
+  noteId Int
+  note Note @relation(fields: [noteId], references: [id])
+  tag Tag @relation(fields: [tagId], references: [id])
+}

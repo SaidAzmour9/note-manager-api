@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const {addUser} = require('../controllers/usersControllers')
 
 
 const getAllUsers = (req, res) => {
@@ -9,10 +10,7 @@ const getUserById = (req, res) => {
     const { id } = req.params;
     res.status(200).json({ message: `Fetching user with id: ${id}` });
 };
-const createUser = (req, res) => {
-    const userData = req.body;
-    res.status(201).json({ message: 'User created', data: userData });
-};
+
 const updateUser = (req, res) => {
     const { id } = req.params;
     const updatedData = req.body;
@@ -26,7 +24,7 @@ const deleteUser = (req, res) => {
 // User routes
 router.get('/', getAllUsers);
 router.get('/users/:id', getUserById);
-router.post('/users', createUser);
+router.post('/', addUser);
 router.put('/users/:id', updateUser);
 router.delete('/users/:id', deleteUser);
 

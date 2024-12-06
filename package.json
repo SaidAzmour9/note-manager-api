@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
@@ -11,8 +13,13 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.0.1",
+    "bcrypt": "^5.1.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
+    "express-validator": "^7.2.0",
+    "joi": "^17.13.3",
+    "notes-api": "file:",
+    "pg": "^8.13.1",
     "prisma": "^6.0.1"
   }
 }
