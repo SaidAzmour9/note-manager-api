@@ -136,8 +136,6 @@ async function getNotes(req,res) {
 async function addNote(req,res) {
     try {
         const { content, categoryId, userId, tagIds } = req.body;
-    
-        // Validate required fields
         if (!content || !categoryId || !userId) {
           return res.status(400).json({ error: 'Content, categoryId, and userId are required.' });
         }

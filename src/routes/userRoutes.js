@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const {addUser} = require('../controllers/usersControllers')
+const {SignUp, logIn} = require('../controllers/usersControllers');
+const { validation,errorValidatorHandler } = require('../utils/Validators');
 
 
-const getAllUsers = (req, res) => {
-    res.status(200).json({ message: 'Fetching all users' });
-};
+
 const getUserById = (req, res) => {
     const { id } = req.params;
     res.status(200).json({ message: `Fetching user with id: ${id}` });
@@ -22,9 +21,9 @@ const deleteUser = (req, res) => {
 };
 
 // User routes
-router.get('/', getAllUsers);
 router.get('/users/:id', getUserById);
-router.post('/', addUser);
+router.post('/signup',validation.userValidation,errorValidatorHandler,SignUp);
+router.post('/login', logIn);
 router.put('/users/:id', updateUser);
 router.delete('/users/:id', deleteUser);
 

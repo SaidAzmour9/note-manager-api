@@ -21,7 +21,7 @@ router.delete('/categories/:id',deletecategory)
 router.get('/categories/:id',getCategoryById)
 
 //  Notes routes
-router.get('/notes',getNotes)
+router.get('/',getNotes)
 router.post('/', addNote);
 
 module.exports = router;
