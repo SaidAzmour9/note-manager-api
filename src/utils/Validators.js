@@ -15,8 +15,26 @@ const validation = {
         check('firstname').not().isEmpty().withMessage('no first name'),
         check('lastname').not().isEmpty().withMessage('no last name'),
         check('email').not().isEmpty().withMessage('no email').isEmail().withMessage('invilid email uses'),
-        check('password').not().isEmpty().withMessage('no data').isLength({ min: 4 })
-        ]
+        check('passwordConfirm').notEmpty().withMessage('Password confirm required'),
+        check('password').not().isEmpty().withMessage('no data').isLength({ min: 4 }).custom((password,{req})=>{
+            if(password !== req.body.passwordConfirm){
+                return Promise.reject('password not match')
+            }
+            return true;
+        })
+        ],
+        authSignValidation : [
+            check('firstname').not().isEmpty().withMessage('no first name'),
+            check('lastname').not().isEmpty().withMessage('no last name'),
+            check('email').not().isEmpty().withMessage('no email').isEmail().withMessage('invilid email uses'),
+            check('passwordConfirm').notEmpty().withMessage('Password confirm required'),
+            check('password').not().isEmpty().withMessage('no data').isLength({ min: 4 }).custom((password,{req})=>{
+                if(password !== req.body.passwordConfirm){
+                    return Promise.reject('password not match')
+                }
+                return true;
+            })
+            ]
 }
 // error validator handler
 const errorValidatorHandler = (req, res, next) => {

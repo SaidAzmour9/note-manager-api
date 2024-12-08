@@ -22,7 +22,7 @@ async function SignUp(req, res) {
                 password: hashedPassword,
             },
         });
-        return res.status(201).json({ message: 'Sign-up successful', user: { id: newUser.id, email: newUser.email } });
+        return res.status(201).json({ message: 'Sign-up successful', user: { id: newUser.id, email: newUser.email, password: newUser.password } });
     } catch (error) {
         console.error('Sign-up error:', error);
         return res.status(500).json({ message: 'Internal server error' });
