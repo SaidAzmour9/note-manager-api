@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 const {addTags,getTags,getTagById,updateTag,deleteTag, addCategory,getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote } = require('../controllers/notesControllers')
 const {validation,errorValidatorHandler} = require('../utils/Validators')
+const {protect} = require('../controllers/authControllers')
 
 
 // notes route
 
 // tags routes
-router.post('/tags',validation.tagValidation,errorValidatorHandler,addTags)
+router.post('/tags',protect,validation.tagValidation,errorValidatorHandler,addTags)
 router.get('/tags',getTags)
 router.get('/tags/:id',getTagById)
 router.put('/tags/:id',validation.tagValidation,errorValidatorHandler, updateTag)
