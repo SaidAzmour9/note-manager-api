@@ -6,15 +6,15 @@ require('dotenv').config();
 
 port = process.env.PORT || 3301;
  
-const userRoutes = require('./src/routes/userRoutes');
+// const userRoutes = require('./src/routes/userRoutes');
 const notesRoutes = require('./src/routes/notesRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const errorHandling = require('./src/middlewares/errorHandler');
 
 app.use(express.json()); 
 
-//users routes
-app.use('/users', userRoutes);
+// //users routes
+// app.use('/users', userRoutes);
 //notes routes
 app.use('/notes', notesRoutes);
 // auth routes

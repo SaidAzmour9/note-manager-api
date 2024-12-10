@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 async function signUp(req,res) {
     try {
-        const { firstname,lastname, email, password } = req.body;
+        const { firstname,lastname, email, password, role } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
@@ -16,6 +16,7 @@ async function signUp(req,res) {
                 firstname,
                 lastname,
                 email,
+                role,
                 password: hashedPassword
             }
         });
@@ -30,8 +31,8 @@ async function signUp(req,res) {
     }   
 }
 
-// auth login
-async function login(req, res) {
+
+async function login(req, res,next) {
     try {
         const { email, password } = req.body;
         const user = await prisma.user.findUnique({ where: { email } });
@@ -40,7 +41,8 @@ async function login(req, res) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         // generate token
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, {
+        const token = jwt.sign({ userId: user.id,email: user.email,
+            role: user.role }, process.env.JWT_SECRET_KEY, {
             expiresIn: process.env.JWT_EXPIRED_TIME
         });
         res.json({ token, user });
@@ -49,22 +51,12 @@ async function login(req, res) {
     }
 }
 
-// protect function
-
-async function protect(req, res, next) {
-    const token = req.header('Authorization');
-    if (!token) {
-        return res.status(401).json({ message: 'Access denied. No token provided.' });
-        }
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-        req.user = decoded;
-        next();
-    } catch (error) {
-            res.status(400).json({ message: 'Invalid token' });
-    }
-}
 
 
 
-module.exports = {signUp,login,protect}
+
+
+
+
+
+module.exports = {signUp,login}

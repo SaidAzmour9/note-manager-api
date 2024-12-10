@@ -1,4 +1,4 @@
-const prisma = require('../utils/PrismaClients');
+const prisma = require('../utils/PrismaClients')
 
 
 // tags functions
@@ -120,40 +120,57 @@ async function getCategoryById(req,res) {
 }
 
 // notes functioons
-
 async function getNotes(req,res) {
+    const user = req.user.userId;
     try {
-        const notes = await prisma.note.findMany();
-        if(notes.length > 0)
-            res.status(200).json(notes);
-        else
-            res.status(404).json({message: 'no notes found'});
+        const notes = await prisma.note.findMany(
+            {
+                where:{
+                    userId: user
+                }
+            });
+            if(notes.length > 0)
+                res.status(200).json(notes);
+            else
+                res.status(404).json({message: 'no notes found'});
     }catch (error) {
         res.status(500).json({message: 'error fetching notes'});
     }
 }
 
+// get note by id
+async function getNoteById(req,res) {
+    try {
+        const user = req.user.userId;
+        const id = Number(req.params.id);
+        const note = await prisma.note.findUnique({where: {id,userId: user}})
+        if(note){
+            res.status(200).json(note);
+        }else{
+            res.status(404).json({message: 'note not found'})
+            }
+    } catch (error) {
+        console.log(error);
+        
+        res.status(500).json({message: 'error fetching note by id'});
+    }
+}
+
+
 async function addNote(req,res) {
     try {
-        const { content, categoryId, userId, tagIds } = req.body;
+        const userId = req.user.userId;
+        console.log(userId);
+        const { content, categoryId, tagIds } = req.body;
         if (!content || !categoryId || !userId) {
-          return res.status(400).json({ error: 'Content, categoryId, and userId are required.' });
+          return res.status(400).json({ message: 'Content, categoryId, and userId are required.' });
         }
-    
-        // Check if user exists
-        const user = await prisma.user.findUnique({
-          where: { id: Number(userId) },
-        });
-        if (!user) {
-          return res.status(404).json({ error: 'User not found.' });
-        }
-    
         // Check if category exists
         const category = await prisma.category.findUnique({
           where: { id: Number(categoryId) },
         });
         if (!category) {
-          return res.status(404).json({ error: 'Category not found.' });
+          return res.status(404).json({ message: 'Category not found.' });
         }
     
         // Validate tags
@@ -163,7 +180,7 @@ async function addNote(req,res) {
           });
     
           if (validTags.length !== tagIds.length) {
-            return res.status(400).json({ error: 'One or more tag IDs are invalid.' });
+            return res.status(400).json({ message: 'One or more tag IDs are invalid.' });
           }
         }
     
@@ -189,12 +206,39 @@ async function addNote(req,res) {
     
         res.status(201).json({ message: 'Note added successfully.', note: newNote });
       } catch (error) {
-        console.error('Error adding note:', error);
-        res.status(500).json({ error: 'An error occurred while adding the note.' });
+        res.status(500).json({ message: 'An error occurred while adding the note.' });
       }
 }
 
+// delete note
+async function deleteNote(req, res) {
+    try {
+        const id = Number(req.params.id);
+        const userId = Number(req.user.userId);
+        const note = await prisma.note.findUnique({ where: { id: id } });
+        if (!note) {
+            return res.status(404).json({ message: 'Note not found.' });
+        }
+        console.log(userId);
+        console.log(note.userId);
+        
+        if (note.userId !== userId) {
+            return res.status(403).json({ message: 'You do not have permission to delete this.' });
+        }
+        
+        
+        //await prisma.note.delete({ where: { id: Number(noteId) } });
+        res.status(200).json({ message: 'Note deleted successfully.' });
+    } catch (error) {
+        res.status(500).json({ message: 'An error occurred while deleting the note.' });
+    }
+}
+
+
+
+
+
 
 module.exports = {
-    addTags,getTags,getTagById,updateTag,deleteTag, addCategory, getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote
+    addTags,getTags,getTagById,updateTag,deleteTag, addCategory, getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote,getNoteById,deleteNote
 }
