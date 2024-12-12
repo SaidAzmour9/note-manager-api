@@ -119,15 +119,20 @@ async function getCategoryById(req,res) {
     }
 }
 
+
 // notes functioons
 async function getNotes(req,res) {
     const user = req.user.userId;
+    const {limit,skip} = req.query;
     try {
         const notes = await prisma.note.findMany(
             {
                 where:{
-                    userId: user
-                }
+                    userId: user,
+                    deletedAt: null
+                },
+                take: limit,
+                skip: skip
             });
             if(notes.length > 0)
                 res.status(200).json(notes);
@@ -137,22 +142,22 @@ async function getNotes(req,res) {
         res.status(500).json({message: 'error fetching notes'});
     }
 }
-
 // get note by id
-async function getNoteById(req,res) {
+async function getNoteById(req, res) {
     try {
-        const user = req.user.userId;
+        const userId = Number(req.user.userId); 
         const id = Number(req.params.id);
-        const note = await prisma.note.findUnique({where: {id,userId: user}})
-        if(note){
-            res.status(200).json(note);
-        }else{
-            res.status(404).json({message: 'note not found'})
-            }
+        const note = await prisma.note.findUnique({
+            where: { id: id },
+        });
+        if (note && note.deletedAt === null && note.userId === userId) {
+            return res.status(200).json(note); 
+        }
+        return res.status(404).json({ message: 'Note not found or already deleted.' });
+
     } catch (error) {
-        console.log(error);
-        
-        res.status(500).json({message: 'error fetching note by id'});
+        console.error('Error fetching note by ID:', error);
+        return res.status(500).json({ message: 'An error occurred while fetching the note.' });
     }
 }
 
@@ -209,36 +214,124 @@ async function addNote(req,res) {
         res.status(500).json({ message: 'An error occurred while adding the note.' });
       }
 }
-
-// delete note
+// note soft delete by updte deletedAt field
 async function deleteNote(req, res) {
     try {
         const id = Number(req.params.id);
         const userId = Number(req.user.userId);
         const note = await prisma.note.findUnique({ where: { id: id } });
-        if (!note) {
-            return res.status(404).json({ message: 'Note not found.' });
+        if (!note || note.deletedAt !== null) {
+            return res.status(404).json({ message: 'Note not found or already deleted.' });
         }
-        console.log(userId);
-        console.log(note.userId);
-        
         if (note.userId !== userId) {
-            return res.status(403).json({ message: 'You do not have permission to delete this.' });
+            return res.status(403).json({ message: 'You do not have permission to delete this note.' });
         }
-        
-        
-        //await prisma.note.delete({ where: { id: Number(noteId) } });
-        res.status(200).json({ message: 'Note deleted successfully.' });
+        await prisma.note.update({
+            where: { id: id },
+            data: { deletedAt: new Date() }, 
+        });
+        return res.status(200).json({ message: 'Note successfully deleted.' });
+
     } catch (error) {
-        res.status(500).json({ message: 'An error occurred while deleting the note.' });
+        console.error(error);
+        return res.status(500).json({ message: 'An error occurred while deleting the note.' });
+    }
+}
+// filtres notes by tags
+async function getNotesByTags(req, res) {
+    try {
+        const userId = Number(req.user.userId); // Get the user ID from the auth middleware
+        const tagId = Number(req.params.tagId); // Get the tagId from the URL path
+
+        console.log("Extracted tagId:", tagId);  // Debugging statement
+
+        if (isNaN(tagId)) {
+            return res.status(400).json({ message: 'Invalid tag ID.' });
+        }
+
+        if (!tagId) {
+            return res.status(400).json({ message: 'Tag ID is required.' });
+        }
+
+        // Fetch notes associated with the given tagId
+        const notes = await prisma.note.findMany({
+            where: {
+                userId: userId,
+                deletedAt: null,
+                tagNote: {
+                    some: {
+                        tagId: tagId, // Only notes that are associated with the given tagId
+                    },
+                },
+            },
+            include: {
+                tagNote: {
+                    include: { tag: true },
+                },
+            },
+        });
+
+        if (notes.length === 0) {
+            return res.status(404).json({ message: 'No notes found for the given tag.' });
+        }
+
+        res.status(200).json({ notes: notes });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred while fetching notes by tag.' });
     }
 }
 
 
 
+// sorting note by created time
+async function getNotesByCreatedTime(req, res) {
+    try {
+        const userId = Number(req.user.userId);
+        const notes = await prisma.note.findMany({
+            where: {
+                userId: userId,
+                deletedAt: null,
+            },
+                orderBy: {
+                    createdAt: 'asc',
+                    },
+            });
+            res.status(200).json({ notes: notes });
+    } catch (error){
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred while fetching notes sorted by created'})
+    }
+}
+
+// sorting notes by last updated date
+async function getNotesByLastUpdated(req, res) {
+    console.log(1);
+    try {
+        const userId = Number(req.user.userId);
+        const notes = await prisma.note.findMany({
+            where: {
+                userId: userId,
+                deletedAt: null,
+                },
+                orderBy: {
+                    updatedAt: 'desc',
+                },
+            });
+            console.log(2);
+            
+            res.status(200).json({ notes: notes });
+    } catch (error){
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred while fetching notes sorted by last'});
+    }
+}
+
+            
+
 
 
 
 module.exports = {
-    addTags,getTags,getTagById,updateTag,deleteTag, addCategory, getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote,getNoteById,deleteNote
+    addTags,getTags,getTagById,updateTag,deleteTag, addCategory, getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote,getNoteById,deleteNote,getNotesByTags,getNotesByCreatedTime,getNotesByLastUpdated
 }
