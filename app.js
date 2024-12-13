@@ -1,6 +1,8 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const app = express();
 require('dotenv').config();
+const nodemailer = require('nodemailer');
 
 
 
@@ -12,6 +14,7 @@ const authRoutes = require('./src/routes/authRoutes');
 const errorHandling = require('./src/middlewares/errorHandler');
 
 app.use(express.json()); 
+app.use(cookieParser());
 
 // //users routes
 // app.use('/users', userRoutes);
@@ -24,7 +27,12 @@ app.use('/auth', authRoutes);
 //error handling
 app.use(errorHandling);
 
+
+
+
+
 //server
 const server = app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
+
