@@ -66,7 +66,7 @@ A robust backend API for managing personal notes efficiently, providing essentia
    ```
 5. Start the server:
    ```bash
-   npm start
+   npm run dev
    ```
 
 ### API Endpoints
