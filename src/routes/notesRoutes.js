@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {addTags,getTags,getTagById,updateTag,deleteTag, addCategory,getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote,getNoteById,deleteNote,getNotesByCreatedTime,getNotesByLastUpdated,getNotesByTags } = require('../controllers/notesControllers')
+const {addTags,getTags,getTagById,updateTag,deleteTag, addCategory,getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote,getNoteById,deleteNote,getNotesByCreatedTime,getNotesByLastUpdated,getNotesByTags,updateNote, searchNote } = require('../controllers/notesControllers')
 const {validation,errorValidatorHandler} = require('../utils/Validators')
 const protect = require('../middlewares/auth')
 const verifyAdmin = require('../middlewares/admin')
@@ -25,12 +25,15 @@ router.get('/categories/:id',[protect,verifyAdmin],getCategoryById)
 //  Notes routes
 
 router.get('/',protect,getNotes)
+router.get('/search',protect,searchNote)
 router.get('/filterByTags/:tagId', protect, getNotesByTags);
 router.get('/created',protect,getNotesByCreatedTime)
 router.get('/updated',protect,getNotesByLastUpdated)
 router.post('/',protect,addNote);
 router.get('/:id',protect,getNoteById)
+router.put('/:id',protect,validation.noteValidation,errorValidatorHandler,updateNote)
 router.delete('/:id',protect,deleteNote)
+
 
 
 

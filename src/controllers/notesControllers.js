@@ -240,11 +240,8 @@ async function deleteNote(req, res) {
 // filtres notes by tags
 async function getNotesByTags(req, res) {
     try {
-        const userId = Number(req.user.userId); // Get the user ID from the auth middleware
-        const tagId = Number(req.params.tagId); // Get the tagId from the URL path
-
-        console.log("Extracted tagId:", tagId);  // Debugging statement
-
+        const userId = Number(req.user.userId); 
+        const tagId = Number(req.params.tagId);
         if (isNaN(tagId)) {
             return res.status(400).json({ message: 'Invalid tag ID.' });
         }
@@ -282,7 +279,99 @@ async function getNotesByTags(req, res) {
     }
 }
 
+// note update
+async function updateNote(req, res) {
+    try {
+        const userId = Number(req.user.userId);
+        const noteId = Number(req.params.id);
+        const { content, categoryId, tagIds } = req.body;
 
+        // Check if the note exists
+        const note = await prisma.note.findUnique({
+            where: { id: noteId },
+            include: { tagNote: true },
+        });
+
+        if (!note) {
+            return res.status(404).json({ message: 'Note not found.' });
+        }
+
+        if (note.userId !== userId) {
+            return res.status(403).json({ message: 'You do not have permission to update this note.' });
+        }
+
+        // Validate tags if provided
+        if (tagIds && tagIds.length > 0) {
+            const validTags = await prisma.tag.findMany({
+                where: { id: { in: tagIds } },
+            });
+            console.log('Provided tagIds:', tagIds);
+            console.log('Valid tags:', validTags);
+
+            if (validTags.length !== tagIds.length) {
+                return res.status(400).json({ message: 'One or more tag IDs are invalid.' });
+            }
+        }
+        
+
+
+        // Update the note
+        const updatedNote = await prisma.note.update({
+            where: { id: noteId },
+            data: {
+                content: content || note.content,
+                categoryId: categoryId || note.categoryId,
+                tagNote: {
+                    deleteMany: {}, // Remove existing tags
+                    create: tagIds?.map((tagId) => ({
+                        tagId: tagId,
+                    })) || [], // Add new tags
+                },
+            },
+            include: {
+                tagNote: { include: { tag: true } },
+                category: true,
+            },
+        });
+
+        res.status(200).json({ message: 'Note updated successfully.', note: updatedNote });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred while updating the note.' });
+    }
+}
+
+// search note by content
+async function searchNote(req, res) {
+    try {
+        const userId = Number(req.user.userId);
+        const { content } = req.body;
+
+        if (!content) {
+            return res.status(400).json({ message: 'Search content is required.' });
+        }
+
+        const notes = await prisma.note.findMany({
+            where: {
+                userId: userId,
+                deletedAt: null,
+                content: {
+                    contains: content,
+                    mode: 'insensitive', // Optional: Makes the search case-insensitive
+                },
+            },
+        });
+
+        if (!notes.length) {
+            return res.status(404).json({ message: 'No notes found matching the search criteria.' });
+        }
+
+        res.status(200).json(notes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred while searching for notes.' });
+    }
+}
 
 // sorting note by created time
 async function getNotesByCreatedTime(req, res) {
@@ -333,5 +422,5 @@ async function getNotesByLastUpdated(req, res) {
 
 
 module.exports = {
-    addTags,getTags,getTagById,updateTag,deleteTag, addCategory, getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote,getNoteById,deleteNote,getNotesByTags,getNotesByCreatedTime,getNotesByLastUpdated
+    addTags,getTags,getTagById,updateTag,deleteTag, addCategory, getCategorys, updateCategory,getCategoryById,deletecategory, getNotes, addNote,getNoteById,deleteNote,getNotesByTags,getNotesByCreatedTime,getNotesByLastUpdated,updateNote,searchNote
 }
