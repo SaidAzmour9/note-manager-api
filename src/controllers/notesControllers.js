@@ -1,6 +1,11 @@
 const prisma = require('../utils/PrismaClients')
 
 
+function formatDate(date) {
+    const options = { year: '2-digit', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+    return new Date(date).toLocaleString('en-GB', options).replace(',', '');
+}
+
 // tags functions
 async function addTags(req,res,next) {
     try{
@@ -57,6 +62,7 @@ async function deleteTag(req,res) {
             res.status(500).json({message: 'error deleting tag'});
         }
  }
+
 
 // Categorys functions
 async function addCategory(req,res) {
@@ -120,28 +126,37 @@ async function getCategoryById(req,res) {
 }
 
 
+
+
 // notes functioons
-async function getNotes(req,res) {
-    const user = req.user.userId;
-    const {limit,skip} = req.query;
-    try {
-        const notes = await prisma.note.findMany(
-            {
-                where:{
-                    userId: user,
-                    deletedAt: null
-                },
-                take: limit,
-                skip: skip
-            });
-            if(notes.length > 0)
-                res.render('notes/index', { notes });
-            else
-                res.status(404).json({message: 'no notes found'});
-    }catch (error) {
-        res.status(500).json({message: 'error fetching notes'});
-    }
-}
+                                                                                                                                                                                                                                                                                            async function getNotes(req,res) {
+                                                                                                                                                                                                                                                                                                const user = req.user.userId;
+                                                                                                                                                                                                                                                                                                const {limit,skip} = req.query;
+                                                                                                                                                                                                                                                                                                console.log(user);
+                                                                                                                                                                                                                                                                                                try {
+                                                                                                                                                                                                                                                                                                    const notes = await prisma.note.findMany({
+                                                                                                                                                                                                                                                                                                        where: { userId: user, deletedAt: null },
+                                                                                                                                                                                                                                                                                                        include: {
+                                                                                                                                                                                                                                                                                                            category: true, 
+                                                                                                                                                                                                                                                                                                            tagNote: {
+                                                                                                                                                                                                                                                                                                                include: {
+                                                                                                                                                                                                                                                                                                                    tag: true, 
+                                                                                                                                                                                                                                                                                                                }
+                                                                                                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                                                                                    });
+                                                                                                                                                                                                                                                                                                    if(notes.length > 0){
+                                                                                                                                                                                                                                                                                                            notes.forEach(note => {
+                                                                                                                                                                                                                                                                                                                note.createdAt = formatDate(note.createdAt);
+                                                                                                                                                                                                                                                                                                                note.tags = note.tags ? note.tags.split(',') : [];
+                                                                                                                                                                                                                                                                                                            });
+                                                                                                                                                                                                                                                                                                            res.render('notes/index', { notes });
+                                                                                                                                                                                                                                                                                                        }else
+                                                                                                                                                                                                                                                                                                            res.status(404).json({message: 'no notes found'});
+                                                                                                                                                                                                                                                                                                }catch (error) {
+                                                                                                                                                                                                                                                                                                    res.status(500).json({message: 'error fetching notes'});
+                                                                                                                                                                                                                                                                                                }
+                                                                                                                                                                                                                                                                                            }
 // get note by id
 async function getNoteById(req, res) {
     try {

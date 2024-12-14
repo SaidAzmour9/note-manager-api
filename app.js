@@ -33,7 +33,9 @@ app.use('/notes', notesRoutes);
 // auth routes
 app.use('/auth', authRoutes);
 
-
+app.use((req, res) => {
+    res.status(404).render('404');
+});
 //error handling
 app.use(errorHandling);
 

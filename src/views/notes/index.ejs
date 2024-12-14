@@ -28,9 +28,27 @@
             <!-- Single Note -->
             <div class="bg-white rounded shadow p-4">
               <h2 class="text-lg font-semibold text-blue-600"><%= note.title %></h2>
+              <h3 class="text-sm text-gray-600"><%= note.createdAt %></h3>
               <p class="text-gray-700 mt-2">
                 <%= note.content.length > 100 ? note.content.slice(0, 100) + '...' : note.content %>
               </p>
+        
+              <!-- Category -->
+              <p class="text-sm text-gray-600 mt-2">Category: <span class="font-semibold"><%= note.category.name %></span></p>
+        
+              <!-- Tags -->
+              <div class="mt-2">
+                <% if (note.tags && note.tags.length > 0) { %>
+                  <p class="text-sm text-gray-600">Tags: 
+                    <% note.tags.forEach(tag => { %>
+                      <span class="bg-blue-200 text-blue-800 rounded-full px-3 py-1 text-xs mr-2"><%= tag %></span>
+                    <% }); %>
+                  </p>
+                <% } else { %>
+                  <p class="text-sm text-gray-600">No tags assigned</p>
+                <% } %>
+              </div>
+        
               <div class="mt-4 flex justify-between items-center">
                 <a href="/notes/<%= note.id %>/edit" class="text-blue-500 hover:underline">Edit</a>
                 <form action="/notes/<%= note.id %>/delete" method="POST" class="inline">
@@ -61,12 +79,12 @@
     function logout() {
       fetch('/auth/logout', {
         method: 'POST',
-        credentials: 'include', // Ensure cookies are included in the request
+        credentials: 'include', 
     })
       .then(response => response.json())
       .then(data => {
-          console.log(data.message); // Show success message
-          window.location.href = '/auth/login'; // Redirect to login page
+          console.log(data.message); 
+          window.location.href = '/auth/login';
       })
       .catch(error => console.error('Error:', error));
       }
