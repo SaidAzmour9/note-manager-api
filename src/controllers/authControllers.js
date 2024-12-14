@@ -38,33 +38,38 @@ async function signUp(req,res) {
 async function login(req, res,next) {
     try {
         const { email, password } = req.body;
+        console.log(email,password);
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
+        
         const token = jwt.sign({ userId: user.id,email: user.email,
             role: user.role }, process.env.JWT_SECRET_KEY, {
             expiresIn: process.env.JWT_EXPIRED_TIME
         });
-        console.log('cookies',req.header('Authorization'));
-        res.json({ token, user });
+        res.cookie('token', token, { httpOnly: true, secure: true });
+        res.redirect('/notes');
     } catch (error) {
+        console.log(error);
         res.status(400).json({ message: error.message });
     }
 }
 
 async function logOut(req, res, next) {
     try {
-        const token = req.header('Authorization').replace('Bearer ', '');
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
-        await prisma.user.update({ where: { id: decoded.userId }, data: { token: null } });
-        res.json({ message: 'Logged out successfully' });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+        const token = req.cookies.token;
+        if (token) {
+            res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'None' });
+            res.json({ message: 'Logged out successfully' });
+            return res.redirect('/auth/login');
         }
-        
-    
+        return res.redirect('/auth/login');
+    } catch (error) {
+        if (!res.headersSent) {
+            res.status(400).json({ message: error.message });
+        }
+    }
 }
 
 
@@ -74,4 +79,5 @@ async function logOut(req, res, next) {
 
 
 
-module.exports = {signUp,login}
+
+module.exports = {signUp,login,logOut}

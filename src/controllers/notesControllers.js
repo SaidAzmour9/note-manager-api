@@ -135,7 +135,7 @@ async function getNotes(req,res) {
                 skip: skip
             });
             if(notes.length > 0)
-                res.status(200).json(notes);
+                res.render('notes/index', { notes });
             else
                 res.status(404).json({message: 'no notes found'});
     }catch (error) {

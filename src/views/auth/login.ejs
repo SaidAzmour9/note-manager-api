@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            fwhite: '#F0F2F5',
+          },
+          fontFamily: {
+                poppins: ['Poppins', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+</head>
+<style>
+    .blurred-background {
+        background: #FFF2F221;
+        backdrop-filter: blur(100px);
+    }
+
+
+</style>
+<body class="font-poppins">
+    <main class="relative bg-[#F0F2F5]" >
+        <div class="absolute flex justify-between w-[50%] px-[58px] top-10">
+            <div class="flex">
+                <img src="/images/logo.png" alt="logo">
+                <span>Logo here</span>
+            </div>
+            <div class="float-right">
+                <p>Don't have an account? <a href="/signUp.html" class="text-[#20DC49]">Sign up</a></p>
+            </div>
+        </div>
+        <div class="flex h-screen">
+            <div class="flex flex-col justify-center items-center w-1/2">
+                <div class="mt-[141px] text-center">
+                    <h1 class="text-2xl font-semibold mb-4">Welcome Back</h1>
+                    <p class="text-[15px] text-[#7E7E7E]">Login into your account</p>
+                    <form action="/auth/login" method="post" class="flex flex-col mt-[67px] space-y-5 w-[400px]" id="form">
+                        <input 
+                            type="email" 
+                            name="email" 
+                            placeholder="Email" 
+                            class="p-3 border rounded-lg focus:outline-none focus:ring focus:ring-green-300" id="email"
+                        />
+                        
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                placeholder="Password" 
+                                class="p-3 border rounded-lg w-full focus:outline-none focus:ring focus:ring-green-300"
+                            />
+                            <button 
+                                type="button" 
+                                onclick="togglePassword('password', this)" 
+                                class="absolute right-3 top-3 text-gray-500 hover:text-gray-800"
+                            >
+                            <img src="/images/blind 1.png" alt="">
+                            </button>
+                            <p style="float: right;" id="error" class="text-[#F91F1F]"></p>
+                            <div style="float: left;">
+                                <input type="checkbox" name="" id="" /><span>Remember me</span>
+                            </div>
+                            
+                        </div>
+                        <button 
+                            type="submit" 
+                            class="border py-3 rounded-lg hover:bg-green-600 transition"
+                        >
+                            Login   
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <img src="/images/signinBanner.png" alt="Signup Banner" class="h-full w-1/2 object-cover">
+            <div class="absolute mt-[400px] lg:ml-[650px] p-10 w-[547px] h-[270px]">
+                <div class="blurred-background p-5 rounded-lg mt-4 ">
+                    <div class="bg-[#20DC49] flex items-center p-1 py-2 mb-4 [15px] w-[250px] rounded-lg">
+                        <img src="/images/icon3.png" alt="">
+                        <span class="">Top Notch Stock Resources</span>
+                    </div>
+                    <p class="text-white">
+                        Today, we create innovative solutions to the challenges  that consumers face in both their everyday lives and events.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+    </main>
+    <script src="/js/scriptsign.js"></script>
+</body>
+</html>
