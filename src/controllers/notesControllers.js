@@ -383,7 +383,7 @@ async function getNotesByCreatedTime(req, res) {
                 deletedAt: null,
             },
                 orderBy: {
-                    createdAt: 'asc',
+                    createdAt: 'desc',
                     },
             });
             res.status(200).json({ notes: notes });
