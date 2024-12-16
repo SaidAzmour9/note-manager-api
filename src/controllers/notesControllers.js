@@ -127,36 +127,35 @@ async function getCategoryById(req,res) {
 
 
 
-
 // notes functioons
-                                                                                                                                                                                                                                                                                            async function getNotes(req,res) {
-                                                                                                                                                                                                                                                                                                const user = req.user.userId;
-                                                                                                                                                                                                                                                                                                const {limit,skip} = req.query;
-                                                                                                                                                                                                                                                                                                console.log(user);
-                                                                                                                                                                                                                                                                                                try {
-                                                                                                                                                                                                                                                                                                    const notes = await prisma.note.findMany({
-                                                                                                                                                                                                                                                                                                        where: { userId: user, deletedAt: null },
-                                                                                                                                                                                                                                                                                                        include: {
-                                                                                                                                                                                                                                                                                                            category: true, 
-                                                                                                                                                                                                                                                                                                            tagNote: {
-                                                                                                                                                                                                                                                                                                                include: {
-                                                                                                                                                                                                                                                                                                                    tag: true, 
-                                                                                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                                                                        }
-                                                                                                                                                                                                                                                                                                    });
-                                                                                                                                                                                                                                                                                                    if(notes.length > 0){
-                                                                                                                                                                                                                                                                                                            notes.forEach(note => {
-                                                                                                                                                                                                                                                                                                                note.createdAt = formatDate(note.createdAt);
-                                                                                                                                                                                                                                                                                                                note.tags = note.tags ? note.tags.split(',') : [];
-                                                                                                                                                                                                                                                                                                            });
-                                                                                                                                                                                                                                                                                                            res.render('notes/index', { notes });
-                                                                                                                                                                                                                                                                                                        }else
-                                                                                                                                                                                                                                                                                                            res.status(404).json({message: 'no notes found'});
-                                                                                                                                                                                                                                                                                                }catch (error) {
-                                                                                                                                                                                                                                                                                                    res.status(500).json({message: 'error fetching notes'});
-                                                                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                                                            }
+async function getNotes(req, res) {
+    const user = req.user.userId;
+    try {
+        const notes = await prisma.note.findMany({
+            where: { userId: user, deletedAt: null },
+            include: {
+                category: true,
+                tagNote: { include: { tag: true } },
+            },
+        });
+
+        const notesWithTags = notes.map(note => ({
+            ...note,
+            tagsna: note.tagNote?.map(tagNote => tagNote.tag?.name || 'Unnamed Tag') || [],
+            formattedDate: formatDate(note.createdAt),
+        }));
+
+        res.render('notes/index', { notes: notesWithTags });
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'Error fetching notes.');
+        res.redirect('/notes');
+    }
+}
+
+
+
+
 // get note by id
 async function getNoteById(req, res) {
     try {
@@ -177,82 +176,78 @@ async function getNoteById(req, res) {
 }
 
 
-async function addNote(req,res) {
+async function addNote(req, res) {
     try {
-        const userId = req.user.userId;
-        console.log(userId);
-        const { content, categoryId, tagIds } = req.body;
-        if (!content || !categoryId || !userId) {
-          return res.status(400).json({ message: 'Content, categoryId, and userId are required.' });
-        }
-        // Check if category exists
-        const category = await prisma.category.findUnique({
-          where: { id: Number(categoryId) },
-        });
-        if (!category) {
-          return res.status(404).json({ message: 'Category not found.' });
-        }
-    
-        // Validate tags
-        if (tagIds && tagIds.length > 0) {
-          const validTags = await prisma.tag.findMany({
-            where: { id: { in: tagIds } },
-          });
-    
-          if (validTags.length !== tagIds.length) {
-            return res.status(400).json({ message: 'One or more tag IDs are invalid.' });
-          }
-        }
-    
-        // Create the note
-        const newNote = await prisma.note.create({
-          data: {
-            content,
-            categoryId: Number(categoryId),
-            userId: Number(userId),
-            tagNote: {
-              create: tagIds?.map((tagId) => ({
-                tagId: Number(tagId),
-              })) || [],
-            },
-          },
-          include: {
-            tagNote: {
-              include: { tag: true },
-            },
-            category: true,
-          },
-        });
-    
-        res.status(201).json({ message: 'Note added successfully.', note: newNote });
-      } catch (error) {
-        res.status(500).json({ message: 'An error occurred while adding the note.' });
-      }
-}
-// note soft delete by updte deletedAt field
-async function deleteNote(req, res) {
-    try {
-        const id = Number(req.params.id);
-        const userId = Number(req.user.userId);
-        const note = await prisma.note.findUnique({ where: { id: id } });
-        if (!note || note.deletedAt !== null) {
-            return res.status(404).json({ message: 'Note not found or already deleted.' });
-        }
-        if (note.userId !== userId) {
-            return res.status(403).json({ message: 'You do not have permission to delete this note.' });
-        }
-        await prisma.note.update({
-            where: { id: id },
-            data: { deletedAt: new Date() }, 
-        });
-        return res.status(200).json({ message: 'Note successfully deleted.' });
+        const userId = req.user?.userId; // Ensure userId exists
+        console.log("User ID:", userId);
 
+        const { content, categoryId, tagIds } = req.body;
+
+        // Validate required fields
+        if (!content || !categoryId || !userId) {
+            req.session.message = 'Content, categoryId, and userId are required.';
+            res.render('notes/add', { notes, message });
+        }
+        const normalizedTagIds = Array.isArray(tagIds)
+            ? tagIds.map(Number) 
+            : typeof tagIds === 'string'
+            ? tagIds.split(',').map(Number)
+            : [];
+        const category = await prisma.category.findUnique({
+            where: { id: Number(categoryId) },
+        });
+        const validTagIds = await prisma.tag.findMany({
+            where: { id: { in: normalizedTagIds } },
+        });
+        const newNote = await prisma.note.create({
+            data: {
+                content,
+                categoryId: Number(categoryId),
+                userId: Number(userId),
+                tagNote: {
+                    create: normalizedTagIds.map((tagId) => ({
+                        tagId: Number(tagId),
+                    })),
+                },
+            },
+            include: {
+                tagNote: {
+                    include: { tag: true },
+                },
+                category: true,
+            },
+        });
+        res.status(201).redirect('/notes');
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'An error occurred while deleting the note.' });
+        console.error("Error adding note:", error);
+
+        res.status(500).json({ message: 'An error occurred while adding the note.' });
     }
 }
-// filtres notes by tags
+
+async function deleteNote(req, res, next) {
+    const { id } = req.params;
+    try {
+        await prisma.note.update({
+            where: { id: Number(id) },
+            data: { deletedAt: new Date() },
+        });
+        if (req.xhr) {
+            return res.status(200).json({ success: true, message: 'Note deleted successfully.' });
+        }
+        req.flash('success', 'Note deleted successfully.');
+        res.redirect('/notes');
+    } catch (error) {
+        console.error(error);
+        if (req.xhr) {
+            return res.status(500).json({ success: false, message: 'Error deleting the note.' });
+        }
+        req.flash('error', 'Error deleting the note.');
+        res.redirect('/notes');
+    }
+}
+
+
 async function getNotesByTags(req, res) {
     try {
         const userId = Number(req.user.userId); 
@@ -260,19 +255,16 @@ async function getNotesByTags(req, res) {
         if (isNaN(tagId)) {
             return res.status(400).json({ message: 'Invalid tag ID.' });
         }
-
         if (!tagId) {
             return res.status(400).json({ message: 'Tag ID is required.' });
         }
-
-        // Fetch notes associated with the given tagId
         const notes = await prisma.note.findMany({
             where: {
                 userId: userId,
                 deletedAt: null,
                 tagNote: {
                     some: {
-                        tagId: tagId, // Only notes that are associated with the given tagId
+                        tagId: tagId,
                     },
                 },
             },
@@ -337,10 +329,10 @@ async function updateNote(req, res) {
                 content: content || note.content,
                 categoryId: categoryId || note.categoryId,
                 tagNote: {
-                    deleteMany: {}, // Remove existing tags
+                    deleteMany: {},
                     create: tagIds?.map((tagId) => ({
                         tagId: tagId,
-                    })) || [], // Add new tags
+                    })) || [],
                 },
             },
             include: {

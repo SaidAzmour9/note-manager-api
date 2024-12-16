@@ -20,6 +20,9 @@
 
   <!-- Main Content -->
   <main class="container mx-auto mt-8">
+
+  
+    
     <!-- Notes Section -->
     <section>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -28,7 +31,7 @@
             <!-- Single Note -->
             <div class="bg-white rounded shadow p-4">
               <h2 class="text-lg font-semibold text-blue-600"><%= note.title %></h2>
-              <h3 class="text-sm text-gray-600"><%= note.createdAt %></h3>
+              <p><%= note.formattedDate %></p>
               <p class="text-gray-700 mt-2">
                 <%= note.content.length > 100 ? note.content.slice(0, 100) + '...' : note.content %>
               </p>
@@ -38,21 +41,17 @@
         
               <!-- Tags -->
               <div class="mt-2">
-                <% if (note.tags && note.tags.length > 0) { %>
-                  <p class="text-sm text-gray-600">Tags: 
-                    <% note.tags.forEach(tag => { %>
-                      <span class="bg-blue-200 text-blue-800 rounded-full px-3 py-1 text-xs mr-2"><%= tag %></span>
-                    <% }); %>
-                  </p>
-                <% } else { %>
-                  <p class="text-sm text-gray-600">No tags assigned</p>
-                <% } %>
+                
+                
+                <% note.tagsna.forEach(tag => { %>
+                  <span class="bg-blue-200 text-blue-800 rounded-full px-3 py-1 text-xs mr-2">#<%= tag %></span>
+              <% }); %>
               </div>
         
               <div class="mt-4 flex justify-between items-center">
                 <a href="/notes/<%= note.id %>/edit" class="text-blue-500 hover:underline">Edit</a>
-                <form action="/notes/<%= note.id %>/delete" method="POST" class="inline">
-                  <button type="submit" class="text-red-500 hover:underline">Delete</button>
+                <form action="/notes/<%= note.id %>/delete" method="get" class="inline">
+                  <button type="submit" class="text-red-500 hover:underline delete-btn">Delete</button>
                 </form>
               </div>
             </div>
@@ -66,7 +65,7 @@
 
     <!-- Add Note Button -->
     <div class="mt-8 flex justify-center">
-      <a href="/notes/addNote" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded shadow">
+      <a href="/notes/add" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded shadow">
         + Add Note
       </a>
     </div>
@@ -87,7 +86,32 @@
           window.location.href = '/auth/login';
       })
       .catch(error => console.error('Error:', error));
-      }
+      };
+
+      document.addEventListener('DOMContentLoaded', () => {
+      const deleteButtons = document.querySelectorAll('.delete-btn');
+      deleteButtons.forEach(button => {
+        button.addEventListener('click', async (event) => {
+            const noteId = event.target.getAttribute('data-id');
+            try {
+                const response = await fetch(`/notes/${noteId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+            } catch (error) {
+                console.error('Error deleting note:', error);
+            }
+        });
+    });
+});
+function formatDate(date) {
+    const options = { year: '2-digit', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+    return new Date(date).toLocaleString('en-GB', options).replace(',', '');
+}
+
   </script>
 
 </body>
