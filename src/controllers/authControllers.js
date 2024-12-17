@@ -4,35 +4,35 @@ const jwt = require('jsonwebtoken');
 
 
 
-
-async function signUp(req,res) {
+async function signUp(req, res, next) {
     try {
-        const { firstname,lastname, email, password, role } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log(1);
+        const { firstname, lastname, email, password } = req.body;
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
-            return res.status(409).json({ message: 'Email is already in use' });
+            req.flash('error', 'Email is already in use.');
+            return res.redirect('/auth/signup');
         }
+        const hashedPassword = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
             data: {
                 firstname,
                 lastname,
                 email,
-                role,
-                password: hashedPassword
-            }
+                password: hashedPassword,
+            },
         });
-        
-        // generate token
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, {
-            expiresIn: process.env.JWT_EXPIRED_TIME
-            });
-        
-        res.json({ token, user });
-        } catch (error) {
-            res.status(400).json({ message: error.message });
-    }   
+        req.flash('success', 'Account created successfully.');
+        return res.redirect('/auth/login');  // Redirect to login page after successful signup
+
+    } catch (error) {
+        console.error('Error during sign up:', error);
+        req.flash('error', 'An error occurred during sign-up. Please try again later.');
+        return res.redirect('/auth/signup');  
+    }
 }
+
+
 
 
 async function login(req, res,next) {

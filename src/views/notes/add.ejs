@@ -17,6 +17,13 @@
       </button>
     </div>
   </header>
+  <% if (errorMessage.length > 0) { %>
+    <div class="text-center text-red alert alert-danger"><%= errorMessage %></div>
+<% } %>
+
+<% if (successMessage.length > 0) { %>
+    <div class="text-center alert alert-success"><%= successMessage %></div>
+<% } %>
     <form action="/notes" method="POST" class="max-w-lg mx-auto">
         <div class="mb-4">
           <label for="categoryId" class="block text-gray-700 font-medium mb-2">Choose a Category:</label>

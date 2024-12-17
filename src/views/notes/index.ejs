@@ -17,7 +17,13 @@
       </button>
     </div>
   </header>
+  <% if (errorMessage.length > 0) { %>
+    <div class="alert alert-danger"><%= errorMessage %></div>
+<% } %>
 
+<% if (successMessage.length > 0) { %>
+    <div class="alert alert-success"><%= successMessage %></div>
+<% } %>
   <!-- Main Content -->
   <main class="container mx-auto mt-8">
 
@@ -34,6 +40,7 @@
               <p><%= note.formattedDate %></p>
               <p class="text-gray-700 mt-2">
                 <%= note.content.length > 100 ? note.content.slice(0, 100) + '...' : note.content %>
+                <a href="/notes/<%= note.id %>" class="text-blue-600 underline">Read more</a>
               </p>
         
               <!-- Category -->

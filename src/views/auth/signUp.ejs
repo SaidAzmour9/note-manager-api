@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign Up</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -16,7 +16,7 @@
             fwhite: '#F0F2F5',
           },
           fontFamily: {
-                poppins: ['Poppins', 'sans-serif'],
+            poppins: ['Poppins', 'sans-serif'],
           },
         }
       }
@@ -24,89 +24,139 @@
   </script>
 </head>
 <style>
-    .blurred-background {
-        background: #00000024;
-        backdrop-filter: blur(42.95073318481445px);
-    }
-
+  .blurred-background {
+    background: #00000024;
+    backdrop-filter: blur(10px);
+  }
 </style>
-<body class="font-poppins">
-    <main class="relative bg-[#F0F2F5]" >
-        <div class="absolute flex justify-between w-full px-[58px] top-10">
-            <div class="flex">
-                <img src="images/logo.png" alt="logo">
-                <span>Logo here</span>
-            </div>
-            <div class="float-right">
-                <p>hav an account? <a href="/signin.html" class="text-[#20DC49]">Sign in</a></p>
-            </div>
-        </div>
-        <div class="flex h-screen">
-            <img src="images/signupBanner.png" alt="Signup Banner" class="h-full w-1/2 object-cover">
-            <div class="absolute mt-[340px] ml-[73px]">
-                <div class="bg-[#20DC49] flex text-[15px] w-[250px] rounded-lg">
-                    <img src="images/flash-circle.png" alt="">
-                    <span class="mt-3">Royal Stock Images</span>
-                </div>
-                <div class="blurred-background p-5 rounded-lg mt-4">
-                    <img src="images/microscope.png" class="bg-black">
-                    <p>Best Stock Photos and Videos <br> from across the internet.</p>
-                </div>
-            </div>
-            <div class="flex flex-col justify-center items-center w-1/2">
-                <div class="mt-[141px] text-center">
-                    <h1 class="text-2xl font-semibold mb-4">Get Started with Marker</h1>
-                    <p class="text-[15px] text-[#7E7E7E]">Getting started is easy</p>
-                    <form action="" class="flex flex-col mt-[67px] space-y-5 w-[400px]" id="form">
-                        <input 
-                            type="text" 
-                            name="name" 
-                            placeholder="Full Name" 
-                            class="p-3 border rounded-lg focus:outline-none focus:ring focus:ring-green-300"
-                        id="username"/>
-                        <input 
-                            type="email" 
-                            name="email" 
-                            placeholder="Enter Email" 
-                            class="p-3 border rounded-lg focus:outline-none focus:ring focus:ring-green-300" id="email"
-                        />
-                        
-                        <div class="relative">
-                            <input 
-                                type="password" 
-                                id="password" 
-                                name="password" 
-                                placeholder="Password" 
-                                class="p-3 border rounded-lg w-full focus:outline-none focus:ring focus:ring-green-300"
-                            />
-                            <button 
-                                type="button" 
-                                onclick="togglePassword('password', this)" 
-                                class="absolute right-3 top-3 text-gray-500 hover:text-gray-800"
-                            >
-                            <img src="images/blind 1.png" alt="">
-                            </button>
-                        </div>
-                        <input 
-                            type="password" 
-                            name="confirmPassword" 
-                            placeholder="Confirm Password" 
-                            class="p-3 border rounded-lg focus:outline-none focus:ring focus:ring-green-300"
-                        id="password2"/>
-                        <p id="error" class="text-[#F91F1F]"></p>
-                        <button 
-                            type="submit" 
-                            class="bg-[#20DC49] py-3 rounded-lg hover:bg-green-600 transition"
-                        >
-                            Create Account
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-        
-    </main>
+<body class="font-poppins bg-fwhite">
+  <% if (errorMessage.length > 0) { %>
+    <div class="alert alert-danger"><%= errorMessage %></div>
+  <% } %>
+  <% if (successMessage.length > 0) { %>
+    <div class="alert alert-success"><%= successMessage %></div>
+  <% } %>
+  <main>
+    <header class="absolute flex justify-between w-full px-8 top-6">
+      <div class="flex items-center space-x-2">
+        <img src="/images/logo.png" alt="Company Logo" class="h-10">
+        <span class="text-lg font-semibold">Your Logo</span>
+      </div>
+      <p>
+        Have an account? 
+        <a href="login" class="text-[#20DC49] hover:underline">Sign in</a>
+      </p>
+    </header>
 
-    <script src="js/script.js"></script>
+
+    <div class="flex flex-col md:flex-row h-screen">
+      <!-- Left Section -->
+      <div class="hidden md:block w-1/2 h-full">
+        <img src="/images/signupBanner.png" alt="Signup Banner" class="h-full w-full object-cover">
+      </div>
+      <div class="absolute top-1/4 left-16 hidden md:block">
+        <div class="bg-[#20DC49] flex items-center text-sm px-4 py-2 rounded-lg text-white">
+          <img src="/images/flash-circle.png" alt="Flash Icon" class="h-5 mr-2">
+          <span>Royal Stock Images</span>
+        </div>
+        <div class="blurred-background p-5 rounded-lg mt-4">
+          <img src="/images/microscope.png" alt="Microscope" class="h-12 mx-auto">
+          <p class="text-white text-center mt-2">
+            Best Stock Photos and Videos from across the internet.
+          </p>
+        </div>
+      </div>
+
+      <!-- Right Section -->
+      <div class="flex flex-col justify-center items-center w-full md:w-1/2 px-8">
+        <div class="text-center">
+          <h1 class="text-3xl font-semibold mb-2">Get Started with Marker</h1>
+          <p class="text-sm text-gray-600">Getting started is easy</p>
+        </div>
+
+        <form action="signup" method="post" class="flex flex-col mt-8 space-y-5 w-full max-w-md" id="form">
+          <label for="firstname" class="sr-only">First Name</label>
+          <input 
+            type="text" 
+            name="firstname" 
+            placeholder="First Name" 
+            class="p-3 border rounded-lg focus:outline-none focus:ring focus:ring-green-300" 
+            id="firstname"
+            required
+          />
+
+          <label for="lastname" class="sr-only">Last Name</label>
+          <input 
+            type="text" 
+            name="lastname" 
+            placeholder="Last Name" 
+            class="p-3 border rounded-lg focus:outline-none focus:ring focus:ring-green-300" 
+            id="lastname"
+            required
+          />
+
+          <label for="email" class="sr-only">Email</label>
+          <input 
+            type="email" 
+            name="email" 
+            placeholder="Enter Email" 
+            class="p-3 border rounded-lg focus:outline-none focus:ring focus:ring-green-300" 
+            id="email"
+            required
+          />
+
+          <div class="relative">
+            <label for="password" class="sr-only">Password</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              placeholder="Password" 
+              class="p-3 border rounded-lg w-full focus:outline-none focus:ring focus:ring-green-300"
+              required
+            />
+            <button 
+              type="button" 
+              onclick="togglePassword('password', this)" 
+              class="absolute right-3 top-3"
+              aria-label="Toggle Password Visibility"
+            >
+              <img src="/images/blind 1.png" alt="Toggle Visibility" id="toggleIcon">
+            </button>
+          </div>
+
+          <label for="passwordConfirm" class="sr-only">Confirm Password</label>
+          <input 
+            type="password" 
+            name="passwordConfirm" 
+            placeholder="Confirm Password" 
+            class="p-3 border rounded-lg focus:outline-none focus:ring focus:ring-green-300"
+            id="password2"
+            required
+          />
+          <p id="error" class="text-red-600 text-sm"></p>
+
+          <button 
+            type="submit" 
+            class="bg-[#20DC49] py-3 rounded-lg text-white hover:bg-green-600 transition"
+          >
+            Create Account
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function togglePassword(fieldId, button) {
+      const passwordField = document.getElementById(fieldId);
+      const isPasswordVisible = passwordField.type === 'text';
+      passwordField.type = isPasswordVisible ? 'password' : 'text';
+
+      // Update the icon (optional)
+      const icon = button.querySelector('img');
+      icon.src = isPasswordVisible ? 'images/blind 1.png' : 'images/eye.png';
+    }
+  </script>
 </body>
 </html>

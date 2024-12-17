@@ -159,46 +159,60 @@ async function getNotes(req, res) {
 // get note by id
 async function getNoteById(req, res) {
     try {
-        const userId = Number(req.user.userId); 
-        const id = Number(req.params.id);
+        const noteId = Number(req.params.id);
         const note = await prisma.note.findUnique({
-            where: { id: id },
+            where: { id: noteId }
         });
-        if (note && note.deletedAt === null && note.userId === userId) {
-            return res.status(200).json(note); 
+        if (!note) {
+            return res.status(404).send('Note not found');
         }
-        return res.status(404).json({ message: 'Note not found or already deleted.' });
-
+        res.render('notes/noteDetail', { note }); 
     } catch (error) {
-        console.error('Error fetching note by ID:', error);
-        return res.status(500).json({ message: 'An error occurred while fetching the note.' });
+        console.error('Error fetching note:', error);
+        res.status(500).send('An error occurred while retrieving the note.');
     }
 }
 
 
 async function addNote(req, res) {
     try {
-        const userId = req.user?.userId; // Ensure userId exists
+        const userId = req.user?.userId;
         console.log("User ID:", userId);
 
         const { content, categoryId, tagIds } = req.body;
 
-        // Validate required fields
+    
         if (!content || !categoryId || !userId) {
-            req.session.message = 'Content, categoryId, and userId are required.';
-            res.render('notes/add', { notes, message });
+            req.flash('error', 'Content and category are required.');
+            return res.redirect('/notes/add'); 
         }
+
+       
         const normalizedTagIds = Array.isArray(tagIds)
-            ? tagIds.map(Number) 
+            ? tagIds.map(Number)
             : typeof tagIds === 'string'
             ? tagIds.split(',').map(Number)
             : [];
+
         const category = await prisma.category.findUnique({
             where: { id: Number(categoryId) },
         });
+        if (!category) {
+            req.flash('error', 'Selected category does not exist.');
+            return res.redirect('/notes/add');
+        }
+
+        
         const validTagIds = await prisma.tag.findMany({
             where: { id: { in: normalizedTagIds } },
         });
+
+        if (normalizedTagIds.length > 0 && validTagIds.length !== normalizedTagIds.length) {
+            req.flash('error', 'One or more tags are invalid.');
+            return res.redirect('/notes/add');
+        }
+
+        
         const newNote = await prisma.note.create({
             data: {
                 content,
@@ -211,19 +225,20 @@ async function addNote(req, res) {
                 },
             },
             include: {
-                tagNote: {
-                    include: { tag: true },
-                },
+                tagNote: { include: { tag: true } },
                 category: true,
             },
         });
-        res.status(201).redirect('/notes');
+        req.flash('success', 'Note added successfully.');
+        res.redirect('/notes');
+
     } catch (error) {
         console.error("Error adding note:", error);
-
-        res.status(500).json({ message: 'An error occurred while adding the note.' });
+        req.flash('error', 'An error occurred while adding the note. Please try again.');
+        res.redirect('/notes/add'); 
     }
 }
+
 
 async function deleteNote(req, res, next) {
     const { id } = req.params;

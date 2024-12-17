@@ -25,7 +25,7 @@ router.get('/categories/:id',[protect,verifyAdmin],getCategoryById)
 
 //  Notes routes
 
-router.get('/',protect,getNotes);
+router.get('',protect,getNotes);
 router.get('/add',protect,async function (req,res) {
     const message = req.flash ? req.flash('success') : req.session.message;
     req.session.message = null;

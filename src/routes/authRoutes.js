@@ -19,6 +19,15 @@ router.get('/login', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+router.get('/signup', async (req, res) => {
+    try {
+        res.render('auth/signup');
+    } catch (error) {
+        console.error('Error rendering login page:', error.message);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 router.post('/signup',validation.authSignValidation,errorValidatorHandler, signUp);
 router.post('/login', login);
 router.post('/logout', logOut);
